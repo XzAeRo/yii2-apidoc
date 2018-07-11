@@ -59,12 +59,22 @@ class ApiRenderer extends \yii\apidoc\templates\html\ApiRenderer
             file_put_contents($targetDir . "/ext-{$ext}-index.html", $indexFileContent);
         }
 
-        
-        $indexFileContent = $this->renderWithLayout($this->indexView, [
-            'docContext' => $context,
-            'types' => $this->filterTypes($types, 'app'),
-            'readme' => null,
-        ]);
+        $yiiTypes = $this->filterTypes($types, 'yii');
+        if (empty($yiiTypes)) {
+            //$readme = @file_get_contents("https://raw.github.com/yiisoft/yii2-framework/master/README.md");
+            $indexFileContent = $this->renderWithLayout($this->indexView, [
+                'docContext' => $context,
+                'types' => $this->filterTypes($types, 'app'),
+                'readme' => null,
+            ]);
+        } else {
+            $readme = @file_get_contents("https://raw.github.com/yiisoft/yii2-framework/master/README.md");
+            $indexFileContent = $this->renderWithLayout($this->indexView, [
+                'docContext' => $context,
+                'types' => $yiiTypes,
+                'readme' => $readme ?: null,
+            ]);
+        }
         file_put_contents($targetDir . '/index.html', $indexFileContent);
 
         if ($this->controller !== null) {
@@ -110,9 +120,9 @@ class ApiRenderer extends \yii\apidoc\templates\html\ApiRenderer
                 break;
         }
 
-        if ($line === null)
+        if ($line === null) {
             return $url;
-        else
-            return $url . '#L' . $line;
+        }
+        return $url . '#L' . $line;
     }
 }
